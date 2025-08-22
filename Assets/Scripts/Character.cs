@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Character : MonoBehaviour
@@ -21,6 +22,7 @@ public class Character : MonoBehaviour
 
     [Header("-- CHARACTER --")] 
     [LabelOverride("Character Speed")] public float speed;
+    private float _finalSpeed;
     
     [LabelOverride("Minimum Health")] public int minHealth = 0;
     [LabelOverride("Maximum Health")] public int maxHealth = 100;
@@ -29,6 +31,11 @@ public class Character : MonoBehaviour
     public int Health { get { return _health; } set { _health = Mathf.Clamp(value, minHealth, maxHealth); } }
 
     [LabelOverride("Got Damaged?")] public bool gotDmg;
+    [LabelOverride("Run Speed Multiplier")] public float runMult;
+    [LabelOverride("Crouch Speed Multiplier")] public float crouchMult;
+
+    private bool _IsCrouching;
+    private bool _isRunning;
     
     #endregion
     
@@ -61,7 +68,13 @@ public class Character : MonoBehaviour
         }
         
     }
-    
+
+    private void OnCollisionEnter(Collision other)
+    {
+        
+        
+    }
+
     #endregion
 
     public void AlterHealth(int healthChange)
@@ -72,9 +85,26 @@ public class Character : MonoBehaviour
 
     public void Movement()
     {
-        transform.position += transform.forward * Input.GetAxis("Vertical") * speed * Time.deltaTime;
-        transform.position += transform.right * Input.GetAxis("Horizontal") * speed * Time.deltaTime;
+        Vector3 camFwd = cam.transform.forward;
+        camFwd.y = 0;
         
+        _IsCrouching = Input.GetKey(KeyCode.LeftControl);
+        _isRunning = Input.GetKey(KeyCode.LeftShift);
+        
+        transform.GetChild(0).localScale = new Vector3(1, (_IsCrouching ? 0.5f : 1), 1);
+        _finalSpeed = speed * SpeedVariations(_IsCrouching, _isRunning);
+
+        Vector3 fwd = transform.forward * Input.GetAxis("Vertical");
+        Vector3 rgt = transform.right * Input.GetAxis("Horizontal");
+
+        Vector3 dir = Vector3.ClampMagnitude((fwd + rgt), 1);
+        
+        transform.position += dir * _finalSpeed * Time.deltaTime;
+
+        transform.forward = Vector3.Slerp(transform.forward, camFwd, 0.05f);
+        
+        Debug.Log(dir.magnitude);
+
     }
 
     public void CameraControl()
@@ -87,7 +117,20 @@ public class Character : MonoBehaviour
         
         axisTgt.transform.eulerAngles = new Vector3(0, hRot, 0);
         
-        cam.transform.LookAt(transform.position);
+        cam.transform.LookAt(axisTgt.transform.position);
+
+    }
+    
+    private float SpeedVariations(bool crouch, bool run)
+    {
+        if (crouch)
+            return crouchMult;
+        
+        else if (run)
+            return runMult;
+
+        else
+            return 1;
 
     }
     
