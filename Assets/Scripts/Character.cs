@@ -9,42 +9,58 @@ public class Character : MonoBehaviour
     #region FIELDS & ATTRIBS
     // Camera
     [Header("-- CAMERA --")]
-    [LabelOverride("Camera")] public Camera cam;
-    [LabelOverride("Vertical Sensitivity")] public float vSens;
-    [LabelOverride("Horizontal Sensitivity")] public float hSens;
+    [LabelOverride("Camera")]
+        public Camera cam;
+    [LabelOverride("Vertical Sensitivity")]
+        public float vSens;
+    [LabelOverride("Horizontal Sensitivity")]
+        public float hSens;
 
     private float _vRot;
     private float _hRot;
 
-    [LabelOverride("Camera Target")] public GameObject tgt;
-    [LabelOverride("Axis Target")] public GameObject axisTgt;
+    [LabelOverride("Camera Target")]
+        public GameObject tgt;
+    [LabelOverride("Axis Target")]
+        public GameObject axisTgt;
 
     [LabelOverride("Camera Trailing")] public float t;
     
     [Tooltip("Sets the minimum (X) and maximum (Y) vertical rotation limits for the camera.")]
-    [SerializeField] [LabelOverride("Set Camera Angle Limits")] private Vector2 angleLimits = new Vector2(-90, 90);
+    [LabelOverride("Set Camera Angle Limits")]
+    [SerializeField] private Vector2 angleLimits = new Vector2(-90, 90);
 
-    [LabelOverride("Camera Target Offset")] public Vector3 camOffset;
-    [SerializeField] [LabelOverride("Camera Player Mask - Third Person")] private LayerMask playerMaskTp;
-    [SerializeField] [LabelOverride("Camera Player Mask - First Person")] private LayerMask playerMaskFp;
+    [LabelOverride("Camera Target Offset")] 
+        public Vector3 camOffset;
+    [SerializeField] [LabelOverride("Camera Player Mask - Third Person")]
+        private LayerMask playerMaskTp;
+    [SerializeField] [LabelOverride("Camera Player Mask - First Person")]
+        private LayerMask playerMaskFp;
 
     // Character
     [Header("-- CHARACTER --")] 
-    [LabelOverride("Character Speed")] public float speed;
+    [LabelOverride("Character Speed")]
+        public float speed;
     private float _finalSpeed;
     
-    [LabelOverride("Minimum Health")] public int minHealth = 0;
-    [LabelOverride("Maximum Health")] public int maxHealth = 100;
+    [LabelOverride("Minimum Health")]
+        public int minHealth = 0;
+    [LabelOverride("Maximum Health")]
+        public int maxHealth = 100;
 
     [Tooltip("Sets the camera into a first or third person POV (press V to swap modes in-game)")]
-    [LabelOverride("Is Third Person Default?")] public bool isThirdPerson = true;
+    [LabelOverride("Is Third Person Default?")]
+        public bool isThirdPerson = true;
 
     private int _health;
     public int Health { get { return _health; } set { _health = Mathf.Clamp(value, minHealth, maxHealth); } }
 
-    [LabelOverride("Got Damaged?")] public bool gotDmg;
-    [LabelOverride("Run Speed Multiplier")] public float runMult;
-    [LabelOverride("Crouch Speed Multiplier")] public float crouchMult;
+    [LabelOverride("Got Damaged?")]
+        public bool gotDmg;
+    [LabelOverride("Run Speed Multiplier")]
+        public float runMult;
+    [LabelOverride("Crouch Speed Multiplier")]
+        public float crouchMult;
 
     private bool _IsCrouching;
     private bool _isRunning;
@@ -98,6 +114,8 @@ public class Character : MonoBehaviour
         
         _IsCrouching = Input.GetKey(KeyCode.LeftControl);
         _isRunning = Input.GetKey(KeyCode.LeftShift);
+        
+        
         
     }
 
