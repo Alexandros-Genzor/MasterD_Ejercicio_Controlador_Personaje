@@ -25,6 +25,8 @@ public class Character : MonoBehaviour
     [SerializeField] [LabelOverride("Set Camera Angle Limits")] private Vector2 angleLimits = new Vector2(-90, 90);
 
     [LabelOverride("Camera Target Offset")] public Vector3 camOffset;
+    [SerializeField] [LabelOverride("Camera Player Mask - Third Person")] private LayerMask playerMaskTp;
+    [SerializeField] [LabelOverride("Camera Player Mask - First Person")] private LayerMask playerMaskFp;
 
     // Character
     [Header("-- CHARACTER --")] 
@@ -34,6 +36,7 @@ public class Character : MonoBehaviour
     [LabelOverride("Minimum Health")] public int minHealth = 0;
     [LabelOverride("Maximum Health")] public int maxHealth = 100;
 
+    [Tooltip("Sets the camera into a first or third person POV (press V to swap modes in-game)")]
     [LabelOverride("Is Third Person Default?")] public bool isThirdPerson = true;
 
     private int _health;
@@ -66,6 +69,8 @@ public class Character : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        Controls();
+        
         Movement();
         CamControl();
 
@@ -75,9 +80,6 @@ public class Character : MonoBehaviour
             gotDmg = false;
             
         }
-        
-        if (Input.GetKeyDown(KeyCode.V))
-            isThirdPerson = !isThirdPerson;
         
     }
 
@@ -89,13 +91,20 @@ public class Character : MonoBehaviour
         
     }
 
+    private void Controls()
+    {
+        if (Input.GetKeyDown(KeyCode.V))
+            isThirdPerson = !isThirdPerson;
+        
+        _IsCrouching = Input.GetKey(KeyCode.LeftControl);
+        _isRunning = Input.GetKey(KeyCode.LeftShift);
+        
+    }
+
     public void Movement()
     {
         Vector3 camFwd = cam.transform.forward;
         camFwd.y = 0;
-        
-        _IsCrouching = Input.GetKey(KeyCode.LeftControl);
-        _isRunning = Input.GetKey(KeyCode.LeftShift);
         
         transform.GetChild(0).localScale = new Vector3(1, (_IsCrouching ? 0.5f : 1), 1);
         _finalSpeed = speed * SpeedVariations(_IsCrouching, _isRunning);
@@ -130,6 +139,8 @@ public class Character : MonoBehaviour
 
     private void CamControl()
     {
+        cam.cullingMask = (isThirdPerson ? playerMaskTp : playerMaskFp);
+        
         _hRot += Input.GetAxis("Mouse X") * hSens;
         _vRot -= Input.GetAxis("Mouse Y") * vSens;
         
