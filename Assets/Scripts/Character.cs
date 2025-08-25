@@ -6,26 +6,35 @@ using UnityEngine;
 
 public class Character : MonoBehaviour
 {
-    #region CAMERA
+    #region FIELDS & ATTRIBS
+    // Camera
     [Header("-- CAMERA --")]
     [LabelOverride("Camera")] public Camera cam;
     [LabelOverride("Vertical Sensitivity")] public float vSens;
     [LabelOverride("Horizontal Sensitivity")] public float hSens;
 
-    [LabelOverride("Vertical Rotation")] public float vRot;
-    [LabelOverride("Horizontal Rotation")] public float hRot;
+    private float _vRot;
+    private float _hRot;
 
     [LabelOverride("Camera Target")] public GameObject tgt;
     [LabelOverride("Axis Target")] public GameObject axisTgt;
 
     [LabelOverride("Camera Trailing")] public float t;
+    
+    [Tooltip("Sets the minimum (X) and maximum (Y) vertical rotation limits for the camera.")]
+    [SerializeField] [LabelOverride("Set Camera Angle Limits")] private Vector2 angleLimits = new Vector2(-90, 90);
 
+    [LabelOverride("Camera Target Offset")] public Vector3 camOffset;
+
+    // Character
     [Header("-- CHARACTER --")] 
     [LabelOverride("Character Speed")] public float speed;
     private float _finalSpeed;
     
     [LabelOverride("Minimum Health")] public int minHealth = 0;
     [LabelOverride("Maximum Health")] public int maxHealth = 100;
+
+    [LabelOverride("Is Third Person Default?")] public bool isThirdPerson = true;
 
     private int _health;
     public int Health { get { return _health; } set { _health = Mathf.Clamp(value, minHealth, maxHealth); } }
@@ -58,7 +67,7 @@ public class Character : MonoBehaviour
     void Update()
     {
         Movement();
-        CameraControl();
+        CamControl();
 
         if (gotDmg)
         {
@@ -67,11 +76,8 @@ public class Character : MonoBehaviour
             
         }
         
-    }
-
-    private void OnCollisionEnter(Collision other)
-    {
-        
+        if (Input.GetKeyDown(KeyCode.V))
+            isThirdPerson = !isThirdPerson;
         
     }
 
@@ -96,29 +102,45 @@ public class Character : MonoBehaviour
 
         Vector3 fwd = transform.forward * Input.GetAxis("Vertical");
         Vector3 rgt = transform.right * Input.GetAxis("Horizontal");
-
-        Vector3 dir = Vector3.ClampMagnitude((fwd + rgt), 1);
         
-        transform.position += dir * _finalSpeed * Time.deltaTime;
+        transform.position += Vector3.ClampMagnitude((fwd + rgt), 1) * _finalSpeed * Time.deltaTime;
 
         transform.forward = Vector3.Slerp(transform.forward, camFwd, 0.05f);
-        
-        Debug.Log(dir.magnitude);
 
     }
 
-    public void CameraControl()
+    public void CameraControlThirdPerson()
     {
+        axisTgt.transform.eulerAngles = new Vector3(_vRot, _hRot, 0);
+        
         cam.transform.position =
             Vector3.Lerp(cam.transform.position, tgt.transform.position, Mathf.SmoothStep(0, 1, t));
-
-        // vRot += Input.GetAxis("Mouse Y") * vSens;
-        hRot += Input.GetAxis("Mouse X") * hSens;
-        
-        axisTgt.transform.eulerAngles = new Vector3(0, hRot, 0);
         
         cam.transform.LookAt(axisTgt.transform.position);
 
+    }
+
+    private void CameraControlFirstPerson()
+    {
+        cam.transform.position = axisTgt.transform.position + camOffset;
+        
+        cam.transform.localRotation = Quaternion.Euler(_vRot, _hRot, 0);
+        
+    }
+
+    private void CamControl()
+    {
+        _hRot += Input.GetAxis("Mouse X") * hSens;
+        _vRot -= Input.GetAxis("Mouse Y") * vSens;
+        
+        _vRot = Mathf.Clamp(_vRot, angleLimits.x, angleLimits.y);
+        
+        if (isThirdPerson)
+            CameraControlThirdPerson();
+        
+        else
+            CameraControlFirstPerson();
+        
     }
     
     private float SpeedVariations(bool crouch, bool run)
